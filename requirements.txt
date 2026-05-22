@@ -1,0 +1,26 @@
+# requirements.txt
+# Pin versions for reproducible builds.
+# Update minor versions as needed; avoid breaking major-version jumps.
+
+# ── Web Framework ─────────────────────────────────────────────────────────────
+fastapi==0.111.0
+uvicorn[standard]==0.29.0        # ASGI server with websocket + HTTP/2 support
+
+# ── Database ──────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9           # PostgreSQL driver (binary wheel, no build needed)
+
+# ── Pydantic & Settings ───────────────────────────────────────────────────────
+pydantic==2.7.1
+pydantic-settings==2.2.1         # BaseSettings with .env file support
+
+# ── PDF Parsing ───────────────────────────────────────────────────────────────
+pdfplumber==0.11.0               # Extracts text from PDFs (wraps pdfminer.six)
+
+# ── Machine Learning ──────────────────────────────────────────────────────────
+scikit-learn==1.4.2
+numpy==1.26.4
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+python-multipart==0.0.9          # Required by FastAPI for file upload (UploadFile)
+joblib==1.4.2                    # Used by scikit-learn for model serialisation

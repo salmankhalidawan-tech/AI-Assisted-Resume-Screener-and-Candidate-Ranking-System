@@ -1,0 +1,42 @@
+# .gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+ENV/
+env/
+
+# Environment
+.env
+*.env
+
+# Uploads (do not commit actual PDF files)
+uploads/*.pdf
+uploads/*.PDF
+
+# ML model artifacts
+ml/model.pkl
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

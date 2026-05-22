@@ -1,0 +1,3 @@
+# ml/.gitkeep
+# This file ensures the ml/ directory is tracked by git
+# even when model.pkl has not yet been generated.

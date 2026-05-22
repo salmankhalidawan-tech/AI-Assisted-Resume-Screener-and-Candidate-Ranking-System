@@ -1,0 +1,66 @@
+# docker-compose.yml
+# Defines two services:
+#   1. api   – The FastAPI application
+#   2. db    – PostgreSQL 15 database
+#
+# Usage:
+#   docker-compose up --build        # First run (builds the image)
+#   docker-compose up                # Subsequent runs
+#   docker-compose down              # Stop and remove containers
+#   docker-compose down -v           # Also remove the database volume
+
+version: "3.9"
+
+services:
+
+  # ── FastAPI Application ────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resume_screener_api
+    ports:
+      - "8000:8000"           # Maps host port 8000 → container port 8000
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/resume_screener
+      - UPLOAD_DIR=uploads
+      - DEBUG=true
+    volumes:
+      - .:/app                # Hot-reload: mounts source code into container
+      - uploads_data:/app/uploads  # Persist uploaded files across restarts
+    depends_on:
+      db:
+        condition: service_healthy   # Wait until PostgreSQL is ready
+    restart: unless-stopped
+    networks:
+      - resume_net
+
+  # ── PostgreSQL Database ────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine       # Lightweight Alpine-based Postgres image
+    container_name: resume_screener_db
+    environment:
+      POSTGRES_USER    : postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB      : resume_screener
+    ports:
+      - "5432:5432"           # Optional: exposes DB to host for local tools like pgAdmin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persist database between restarts
+    healthcheck:
+      test    : ["CMD-SHELL", "pg_isready -U postgres -d resume_screener"]
+      interval: 5s
+      timeout : 5s
+      retries : 10
+    networks:
+      - resume_net
+
+# ── Named Volumes ────────────────────────────────────────────────────────────
+volumes:
+  postgres_data:   # Stores the PostgreSQL data files
+  uploads_data:    # Stores uploaded PDF resumes
+
+# ── Networks ──────────────────────────────────────────────────────────────────
+networks:
+  resume_net:
+    driver: bridge

@@ -1,0 +1,3 @@
+# uploads/.gitkeep
+# Ensures the uploads/ directory is created and tracked by git.
+# Actual uploaded PDF files are excluded via .gitignore.

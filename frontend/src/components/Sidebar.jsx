@@ -1,14 +1,12 @@
 // src/components/Sidebar.jsx
-// Persistent left-side navigation for the dashboard.
-
 import { NavLink } from 'react-router-dom'
 
 const NAV_ITEMS = [
-  { to: '/',        icon: '⬡', label: 'Dashboard' },
-  { to: '/upload',  icon: '↑', label: 'Upload Resume' },
-  { to: '/resumes', icon: '📄', label: 'All Resumes' },
-  { to: '/jobs',    icon: '💼', label: 'Job Postings' },
-  { to: '/match',   icon: '⚡', label: 'Match Score' },
+  { to: '/',         icon: '⊞', label: 'Dashboard' },
+  { to: '/jobs',     icon: '📋', label: 'Open Roles' },
+  { to: '/resumes',  icon: '👥', label: 'Candidates (Active)' },
+  { to: '/match',    icon: '📊', label: 'Analytics' },
+  { to: '/upload',   icon: '⬆', label: 'Upload Resume' },
 ]
 
 export default function Sidebar() {
@@ -16,33 +14,40 @@ export default function Sidebar() {
     <aside className="sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <div className="logo-icon">🎯</div>
-        <h1>ResumeAI</h1>
-        <p>Intelligent Screener</p>
+        <div className="logo-box">R</div>
+        <span className="logo-text">RankFlow</span>
       </div>
 
       {/* Navigation */}
       <nav className="sidebar-nav">
-        <span className="nav-label">Menu</span>
-
         {NAV_ITEMS.map(({ to, icon, label }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
-            className={({ isActive }) =>
-              `nav-item${isActive ? ' active' : ''}`
-            }
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
             <span className="nav-icon">{icon}</span>
             {label}
           </NavLink>
         ))}
+
+        <div className="nav-section-label" style={{ marginTop: 16 }}>System</div>
+        <a href="#" className="nav-item">
+          <span className="nav-icon">⚙</span>Settings
+        </a>
+        <a href="#" className="nav-item">
+          <span className="nav-icon">🛡</span>Admin
+        </a>
       </nav>
 
-      {/* Footer */}
-      <div className="sidebar-footer">
-        <p>FastAPI · PostgreSQL · TF-IDF</p>
+      {/* User */}
+      <div className="sidebar-user">
+        <div className="user-avatar">SJ</div>
+        <div className="user-info">
+          <div className="user-name">Sarah J.</div>
+          <div className="user-role">Admin</div>
+        </div>
       </div>
     </aside>
   )

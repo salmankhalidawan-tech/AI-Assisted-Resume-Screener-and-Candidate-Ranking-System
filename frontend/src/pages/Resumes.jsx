@@ -1,16 +1,33 @@
 // src/pages/Resumes.jsx
-// Lists all uploaded resumes fetched from GET /resumes/
-
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../api/api'
 
-export default function Resumes() {
-  const [resumes, setResumes]   = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState('')
-  const [search, setSearch]     = useState('')
+function getInitials(name = '') {
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '??'
+}
 
-  // Fetch all resumes on mount
+function getStatus(index) {
+  return ['Shortlisted', 'Under Review', 'Contacted', 'Pending'][index % 4]
+}
+
+function StatusBadge({ status }) {
+  const cls = {
+    'Shortlisted':  'status-badge status-shortlisted',
+    'Under Review': 'status-badge status-review',
+    'Contacted':    'status-badge status-contacted',
+    'Pending':      'status-badge status-pending',
+  }[status] || 'status-badge status-pending'
+  return <span className={cls}>{status}</span>
+}
+
+export default function Resumes() {
+  const [resumes, setResumes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState('')
+  const [search, setSearch]   = useState('')
+  const navigate = useNavigate()
+
   useEffect(() => {
     api.get('/resumes/')
       .then(res => setResumes(res.data))
@@ -18,7 +35,6 @@ export default function Resumes() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Client-side search filter (name, email, skills)
   const filtered = resumes.filter(r => {
     const q = search.toLowerCase()
     return (
@@ -28,57 +44,104 @@ export default function Resumes() {
     )
   })
 
+  const skillList = (skills) =>
+    (skills || '').split(',').map(s => s.trim()).filter(Boolean)
+
   return (
     <div className="fade-up">
       <div className="page-header">
-        <h2>All Resumes</h2>
-        <p>
-          {loading ? 'Loading…' : `${resumes.length} resume${resumes.length !== 1 ? 's' : ''} in the database`}
-        </p>
+        <div>
+          <h2>Candidates (Active)</h2>
+          <p>{loading ? 'Loading…' : `${resumes.length} candidate${resumes.length !== 1 ? 's' : ''} in the system`}</p>
+        </div>
+        <button className="btn btn-primary" onClick={() => navigate('/upload')}>
+          + Upload Resume
+        </button>
       </div>
 
-      {/* Search bar */}
-      {!loading && resumes.length > 0 && (
-        <div className="form-group" style={{ maxWidth: '400px', marginBottom: '24px' }}>
+      {/* Search */}
+      <div className="search-filter-row" style={{ marginBottom: 20 }}>
+        <div className="search-box">
+          <span className="search-icon">🔍</span>
           <input
-            className="form-input"
-            placeholder="🔍  Search by name, email or skill…"
+            placeholder="Search by name, email or skill…"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-      )}
+        <button className="btn-filter">⚡ Filters</button>
+      </div>
 
-      {/* Error */}
       {error && <div className="alert alert-error">⚠️ {error}</div>}
 
-      {/* Loading */}
       {loading && (
         <div className="spinner-wrap">
-          <div className="spinner" />
-          Fetching resumes…
+          <div className="spinner" />Fetching candidates…
         </div>
       )}
 
-      {/* Empty */}
       {!loading && !error && resumes.length === 0 && (
         <div className="empty-state card">
           <div className="empty-icon">📭</div>
-          <h3>No resumes yet</h3>
+          <h3>No candidates yet</h3>
           <p>Upload a PDF resume to get started.</p>
         </div>
       )}
 
-      {/* Grid */}
       {!loading && filtered.length > 0 && (
-        <div className="item-grid">
-          {filtered.map(resume => (
-            <ResumeCard key={resume.id} resume={resume} />
-          ))}
+        <div className="table-wrap">
+          <table className="candidate-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Candidate Name</th>
+                <th>Email</th>
+                <th>Skills</th>
+                <th>Status</th>
+                <th>Uploaded</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r, i) => (
+                <tr key={r.id}>
+                  <td className="rank-cell">
+                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>{i + 1}</span>
+                  </td>
+                  <td>
+                    <div className="candidate-cell">
+                      <div className="candidate-avatar">{getInitials(r.name)}</div>
+                      <div>
+                        <div className="candidate-name">{r.name || 'Unknown'}</div>
+                        <div className="candidate-score-sub">Resume #{r.id}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ color: 'var(--primary)', fontSize: 13 }}>{r.email || '—'}</td>
+                  <td>
+                    <div className="skills-cell">
+                      {skillList(r.skills).slice(0, 3).map((s, si) => (
+                        <span key={s} className={`tag ${si % 2 === 0 ? 'tag-teal' : 'tag-blue'}`}>{s}</span>
+                      ))}
+                    </div>
+                  </td>
+                  <td><StatusBadge status={getStatus(i)} /></td>
+                  <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </td>
+                  <td>
+                    <div className="action-col">
+                      <button className="action-btn evaluate" onClick={() => navigate('/match')}>Evaluate</button>
+                      <button className="action-btn">Schedule</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* No search results */}
       {!loading && resumes.length > 0 && filtered.length === 0 && (
         <div className="empty-state">
           <div className="empty-icon">🔍</div>
@@ -86,37 +149,6 @@ export default function Resumes() {
           <p>Try a different name, email, or skill.</p>
         </div>
       )}
-    </div>
-  )
-}
-
-function ResumeCard({ resume }) {
-  const skills = resume.skills
-    ? resume.skills.split(',').map(s => s.trim()).filter(Boolean)
-    : []
-
-  return (
-    <div className="item-card fade-up">
-      <div className="item-id">Resume #{resume.id}</div>
-      <div className="item-name">{resume.name || 'Unknown Candidate'}</div>
-      <div className="item-email">{resume.email || 'No email found'}</div>
-
-      {skills.length > 0 && (
-        <div className="skills-list">
-          {skills.slice(0, 6).map(s => (
-            <span key={s} className="tag tag-teal">{s}</span>
-          ))}
-          {skills.length > 6 && (
-            <span className="tag tag-gray">+{skills.length - 6} more</span>
-          )}
-        </div>
-      )}
-
-      <div style={{ marginTop: '14px', fontSize: '11px', color: 'var(--text-muted)' }}>
-        Uploaded {new Date(resume.created_at).toLocaleDateString('en-US', {
-          year: 'numeric', month: 'short', day: 'numeric'
-        })}
-      </div>
     </div>
   )
 }
